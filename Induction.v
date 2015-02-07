@@ -636,7 +636,14 @@ problem using the theorem no matter which way we state it. *)
 Theorem beq_nat_refl : forall n : nat,
   true = beq_nat n n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    apply IHn'.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (plus_swap')  *)
@@ -654,7 +661,17 @@ Proof.
 Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite plus_assoc.
+  rewrite plus_assoc.
+  replace (n + m) with (m + n).
+  Case "Goal".
+    reflexivity.
+  Case "Proof of replace".
+    rewrite plus_comm.
+    reflexivity.
+Qed.
+
 (** [] *)
 
 
@@ -675,6 +692,39 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
+Inductive bin : Type :=
+  | BO : bin         (* 0 *)
+  | D  : bin -> bin  (* Double *)
+  | DP : bin -> bin. (* Double Plus *)
+
+Fixpoint incr (b: bin) : bin :=
+  match b with
+  | BO    => DP BO
+  | D b'  => DP b'
+  | DP b' => D (incr b')
+  end.
+
+Fixpoint bin_to_nat (b: bin) : nat :=
+  match b with
+  | BO    => O
+  | D b'  => (bin_to_nat b') * 2
+  | DP b' => (bin_to_nat b') * 2 + 1
+  end.
+
+Theorem bin_to_nat_pres_incr:
+  forall (b: bin), bin_to_nat (incr b) = (bin_to_nat b) + 1.
+Proof.
+  intros b.
+  induction b as [| b' | b''].
+    reflexivity.
+    reflexivity.
+
+    simpl.
+    rewrite -> IHb''.
+    rewrite -> plus_dist_r.
+    rewrite <- plus_assoc.
+    reflexivity.
+Qed.
 
 (** **** Exercise: 5 stars, advanced (binary_inverse)  *)
 (** This exercise is a continuation of the previous exercise about
@@ -703,6 +753,60 @@ Proof.
 *)
 
 (* FILL IN HERE *)
+
+Fixpoint nat_to_bin (n: nat) : bin :=
+  match n with
+  | O    => BO
+  | S n' => incr (nat_to_bin n')
+  end.
+
+Theorem plus_1_r : forall n, S n = n + 1.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite IHn'.
+    reflexivity.
+Qed.
+
+Theorem nat_to_bin_to_nat : forall n, n = bin_to_nat (nat_to_bin n).
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl.
+    rewrite bin_to_nat_pres_incr.
+    rewrite <- IHn'.
+    rewrite <- plus_1_r.
+    reflexivity.
+Qed.
+
+Fixpoint normalize (b: bin) : bin :=
+  match b with
+  | BO => BO
+  | D b =>
+    match normalize b with
+    | BO => BO
+    | b => b
+    end
+  | DP b => DP (normalize b)
+  end.
+
+Example normalize1 : normalize BO = BO.
+Proof. reflexivity. Qed.
+Example normalize2 : normalize (D BO) = BO.
+Proof. reflexivity. Qed.
+Example normalize3 : normalize (D (D BO)) = BO.
+Proof. reflexivity. Qed.
+Example normalize4 : normalize (DP (D (D BO))) = DP BO.
+Proof. reflexivity. Qed.
+
+Theorem bin_normalize : forall b, normalize b = nat_to_bin (bin_to_nat b).
+Proof.  (* no idea *) Abort.
+
 (** [] *)
 
 (* ###################################################################### *)
