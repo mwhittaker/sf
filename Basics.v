@@ -1090,7 +1090,16 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     _does_ terminate on all inputs, but that Coq will reject because
     of this restriction. *)
 
-(* FILL IN HERE *)
+(*
+Fixpoint rejected (n: nat) : nat :=
+  if beq_nat n 0 then
+    0
+  else if evenb n then
+    rejected (n + 1)
+  else
+    rejected (n - 2).
+*)
+
 (** [] *)
 
 (** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
