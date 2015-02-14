@@ -1288,16 +1288,16 @@ Proof. reflexivity. Qed.
     type: [nat] itself is usually problematic. *)
 
 Definition exp (n m : nat) : nat :=
-  admit.
+  fun X f x => (m (X -> X) (fun f => (mult n (fun X f x => f x)) X f) (one X f)) x.
 
 Example exp_1 : exp two two = plus two two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_2 : exp three two = plus (mult two (mult two two)) one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_3 : exp three zero = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 End Church.
 
