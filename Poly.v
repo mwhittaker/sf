@@ -516,8 +516,9 @@ Fixpoint split
   match l with
   | []        => ([], [])
   | (x, y)::l =>
-    let (xs, ys) := split l in
-    (x::xs, y::ys)
+    match split l with
+    | (xs, ys) => (x::xs, y::ys)
+    end
   end.
 
 Example test_split:

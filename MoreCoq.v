@@ -280,7 +280,12 @@ Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = x :: j ->
      x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H1 H2.
+  inversion H1.
+  inversion H2.
+  symmetry.
+  apply H0.
+Qed.
 (** [] *)
 
 Theorem silly6 : forall (n : nat),
@@ -301,7 +306,9 @@ Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = z :: j ->
      x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j contra.
+  inversion contra.
+Qed.
 (** [] *)
 
 (** While the injectivity of constructors allows us to reason
@@ -313,9 +320,6 @@ Theorem f_equal : forall (A B : Type) (f: A -> B) (x y: A),
     x = y -> f x = f y.
 Proof. intros A B f x y eq. rewrite eq.  reflexivity.  Qed.
 
-
-
-
 (** **** Exercise: 2 stars, optional (practice)  *)
 (** A couple more nontrivial but not-too-complicated proofs to work
     together in class, or for you to work as exercises. *)
@@ -324,12 +328,27 @@ Proof. intros A B f x y eq. rewrite eq.  reflexivity.  Qed.
 Theorem beq_nat_0_l : forall n,
    beq_nat 0 n = true -> n = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  destruct n.
+  Case "n = 0".
+    reflexivity.
+  Case "n > 0".
+    intros contra.
+    inversion contra.
+Qed.
 
 Theorem beq_nat_0_r : forall n,
    beq_nat n 0 = true -> n = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  destruct n.
+  Case "n = 0".
+    reflexivity.
+  Case "n > 0".
+     simpl.
+     intros contra.
+     inversion contra.
+Qed.
 (** [] *)
 
 
@@ -392,9 +411,32 @@ Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
      n = m.
 Proof.
-  intros n. induction n as [| n'].
-    (* Hint: use the plus_n_Sm lemma *)
-    (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    simpl.
+    intros m H.
+    destruct m as [| m'].
+      SCase "m = 0".
+        reflexivity.
+      SCase "m = S m'".
+        inversion H.
+  Case "n = S n'".
+    simpl.
+    intros m H.
+    destruct m as [| m'].
+    SCase "m = 0".
+      inversion H.
+    SCase "m = S m'".
+      simpl in H.
+      rewrite <- plus_n_Sm in H.
+      rewrite <- plus_n_Sm in H.
+      inversion H.
+      apply IHn' in H1.
+      apply f_equal.
+      apply H1.
+Qed.
+
 (** [] *)
 
 (* ###################################################### *)
@@ -540,7 +582,26 @@ Proof.
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    intros m H.
+    destruct m.
+    SCase "m = 0".
+      reflexivity.
+    SCase "m > 0".
+      inversion H.
+  Case "n = S n'".
+    intros m H.
+    destruct m.
+    SCase "m = 0".
+      inversion H.
+    SCase "m > 0".
+      simpl in H.
+      apply f_equal.
+      apply IHn'.
+      apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
@@ -713,7 +774,28 @@ Theorem index_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      index n l = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l.
+  generalize dependent n.
+  induction l as [| x l'].
+  Case "l = []".
+    intros n H.
+    destruct n.
+    SCase "n = 0".
+      reflexivity.
+    SCase "n > 0".
+      inversion H.
+  Case "l = x::l'".
+    intros n H.
+    destruct n as [| n'].
+    SCase "n = 0".
+      inversion H.
+    SCase "n > 0".
+      simpl.
+      apply IHl'.
+      inversion H.
+      reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (index_after_last_informal)  *)
@@ -736,7 +818,28 @@ Theorem length_snoc''' : forall (n : nat) (X : Type)
      length l = n ->
      length (snoc l v) = S n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X v l.
+  generalize dependent n.
+  induction l as [| x l'].
+  Case "l = []".
+    intros n H.
+    destruct n.
+    SCase "n = 0". reflexivity.
+    SCase "n > 0". inversion H.
+  Case "l = x::l'".
+    intros n H.
+    destruct n as [| n'].
+    SCase "n = 0".
+      inversion H.
+    SCase "n = S n'".
+    simpl.
+    apply f_equal.
+    apply IHl'.
+    simpl in H.
+    inversion H.
+    reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (app_length_cons)  *)
@@ -748,17 +851,81 @@ Theorem app_length_cons : forall (X : Type) (l1 l2 : list X)
      length (l1 ++ (x :: l2)) = n ->
      S (length (l1 ++ l2)) = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X l1.
+  induction l1 as [| x1 l1'].
+  Case "l1 = []".
+    intros l2 x n H.
+    destruct n as [| n'].
+    SCase "n = 0".
+      inversion H.
+    SCase "n = S n'".
+      simpl.
+      apply f_equal.
+      simpl in H.
+      inversion H.
+      reflexivity.
+  Case "l1 = x1::l1'".
+    intros l2 x n H.
+    destruct n as [| n'].
+    SCase "n = 0".
+      inversion H.
+    SCase "n = S n'".
+      simpl.
+      apply f_equal.
+      apply IHl1' with x.
+      simpl in H.
+      inversion H.
+      reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (app_length_twice)  *)
 (** Prove this by induction on [l], without using app_length. *)
 
+Theorem app_length_cons_eq : forall (X: Type) (l1 l2: list X) (x: X),
+  length (l1 ++ (x::l2)) = S (length (l1 ++ l2)).
+Proof.
+  intros X l1.
+  induction l1 as [| x1 l1'].
+  Case "l1 = []".
+    intros l2 x.
+    reflexivity.
+  Case "l1 = x1::l1'".
+    intros l2 x.
+    simpl.
+    apply f_equal.
+    apply IHl1'.
+Qed.
+
 Theorem app_length_twice : forall (X:Type) (n:nat) (l:list X),
      length l = n ->
      length (l ++ l) = n + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X n l.
+  generalize dependent n.
+  induction l as [| x l'].
+  Case "l = []".
+    simpl.
+    intros n H.
+    rewrite <- H.
+    reflexivity.
+  Case "l = x::l'".
+    simpl.
+    intros n H.
+    rewrite app_length_cons_eq.
+    destruct n as [| n'].
+    SCase "n = 0".
+      inversion H.
+    SCase "n = S n'".
+      simpl.
+      rewrite <- plus_n_Sm.
+      apply f_equal.
+      apply f_equal.
+      apply IHl'.
+      inversion H.
+      reflexivity.
+Qed.
 (** [] *)
 
 
@@ -772,7 +939,24 @@ Theorem double_induction: forall (P : nat -> nat -> Prop),
   (forall m n, P m n -> P (S m) (S n)) ->
   forall m n, P m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P H1 H2 H3 H4.
+  induction m as [| m'].
+  Case "m = 0".
+    induction n as [| n'].
+    SCase "n = 0".
+      apply H1.
+    SCase "n = S n'".
+      apply H3.
+      apply IHn'.
+  Case "m = S m'".
+    induction n as [| n'].
+    SCase "n = 0".
+      apply H2.
+      apply IHm'.
+    SCase "n = S n'".
+      apply H4.
+      apply IHm'.
+Qed.
 (** [] *)
 
 
@@ -819,7 +1003,12 @@ Proof.
 Theorem override_shadow : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   (override (override f k1 x2) k1 x1) k2 = (override f k1 x1) k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 x2 k1 k2 f.
+  unfold override.
+  destruct (beq_nat k1 k2).
+  Case "k1 = k2".  reflexivity.
+  Case "k1 <> k2". reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (combine_split)  *)
@@ -829,7 +1018,24 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y l.
+  induction l as [| p l'].
+  Case "l = []".
+    intros l1 l2 H.
+    inversion H.
+    reflexivity.
+  Case "l = p::l'".
+    destruct p as [x y].
+    intros l1 l2 H.
+    simpl in H.
+    destruct (split l') as [xs ys].
+    inversion H.
+    simpl.
+    apply f_equal.
+    apply IHl'.
+    reflexivity.
+Qed.
+
 (** [] *)
 
 (** Sometimes, doing a [destruct] on a compound expression (a
@@ -898,7 +1104,29 @@ Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f b.
+  destruct (f b) eqn: fb.
+  Case "f b = true".
+    destruct b.
+    SCase "b = true".
+      rewrite fb.
+      rewrite fb.
+      reflexivity.
+    SCase "b = false".
+      destruct (f true) eqn:ftrue.
+        apply ftrue.
+        apply fb.
+  Case "f b = false".
+    destruct b.
+    SCase "b = true".
+      destruct (f false) eqn:ffalse.
+        apply fb.
+        apply ffalse.
+    SCase "b = false".
+      rewrite fb.
+      apply fb.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars (override_same)  *)
@@ -906,7 +1134,17 @@ Theorem override_same : forall (X:Type) x1 k1 k2 (f : nat->X),
   f k1 = x1 ->
   (override f k1 x1) k2 = f k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 k1 k2 f H.
+  unfold override.
+  destruct (beq_nat k1 k2) eqn:k1k2.
+  Case "k1 = k2".
+    apply beq_nat_true in k1k2.
+    rewrite k1k2 in H.
+    symmetry.
+     apply H.
+  Case "k1 <> k2".
+    reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################## *)
@@ -991,7 +1229,25 @@ Proof.
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    intros m.
+    induction m as [| m'].
+    SCase "m = 0".
+      reflexivity.
+    SCase "m = S m'".
+      reflexivity.
+  Case "n = S n'".
+    intros m.
+    induction m as [| m'].
+    SCase "m = 0".
+      reflexivity.
+    SCase "m = S m'".
+      simpl.
+      apply IHn'.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal)  *)
@@ -1011,7 +1267,14 @@ Theorem beq_nat_trans : forall n m p,
   beq_nat m p = true ->
   beq_nat n p = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p H1 H2.
+  apply beq_nat_true in H1.
+  apply beq_nat_true in H2.
+  rewrite <- H1 in H2.
+  rewrite H2.
+  rewrite <- beq_nat_refl.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (split_combine)  *)
@@ -1027,14 +1290,43 @@ Proof.
     and [l2] for [split] [combine l1 l2 = (l1,l2)] to be true?)  *)
 
 Definition split_combine_statement : Prop :=
-(* FILL IN HERE *) admit.
+  forall (X: Type) (l1 l2: list X), length l1 = length l2 -> split (combine l1 l2) = (l1, l2).
+
+Lemma length_0 : forall (X: Type) (l: list X), length l = 0 -> l = [].
+Proof.
+  intros X l H.
+  induction l as [| x l'].
+    reflexivity.
+    inversion H.
+Qed.
 
 Theorem split_combine : split_combine_statement.
 Proof.
-(* FILL IN HERE *) Admitted.
-
-
-
+  unfold split_combine_statement.
+  intros X l1.
+  induction l1 as [| x1 l1'].
+  Case "l1 = []".
+    simpl.
+    intros l2 H.
+    symmetry in H.
+    apply length_0 in H.
+    rewrite H.
+    reflexivity.
+  Case "l1 = x1::l1'".
+    intros l2 H.
+    induction l2 as [| x2 l2'].
+    SCase "l2 = []".
+      inversion H.
+    SCase "l2 = x2::l2'".
+      simpl in H.
+      inversion H.
+      apply IHl1' in H1.
+      simpl.
+      destruct (split (combine l1' l2')) as [xs ys].
+        inversion H1.
+        apply f_equal.
+        reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (override_permute)  *)
@@ -1042,7 +1334,17 @@ Theorem override_permute : forall (X:Type) x1 x2 k1 k2 k3 (f : nat->X),
   beq_nat k2 k1 = false ->
   (override (override f k2 x2) k1 x1) k3 = (override (override f k1 x1) k2 x2) k3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 x2 k1 k2 k3 f H.
+  unfold override.
+  destruct (beq_nat k1 k3) eqn:k1k3.
+  Case "k1 = k3".
+    apply beq_nat_true in k1k3.
+    rewrite k1k3 in H.
+    rewrite H.
+    reflexivity.
+  Case "k1 <> k3".
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (filter_exercise)  *)
@@ -1053,7 +1355,24 @@ Theorem filter_exercise : forall (X : Type) (test : X -> bool)
      filter test l = x :: lf ->
      test x = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X test x l.
+  induction l as [| x' l'].
+  Case "l = []".
+    simpl.
+    intros lf H.
+    inversion H.
+  Case "l = x'::l'".
+    intros lf H.
+    simpl in H.
+    destruct (test x') eqn:testx'.
+    SCase "test x' = true".
+      inversion H.
+      rewrite <- H1.
+      apply testx'.
+    SCase "test x' = false".
+      apply IHl' with lf.
+      apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (forall_exists_challenge)  *)
