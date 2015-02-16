@@ -214,7 +214,10 @@ Proof.
 Theorem proj2 : forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q H.
+  destruct H as [HP HQ].
+  apply HQ.
+Qed.
 (** [] *)
 
 Theorem and_commut : forall P Q : Prop,
@@ -238,7 +241,14 @@ Theorem and_assoc : forall P Q R : Prop,
 Proof.
   intros P Q R H.
   destruct H as [HP [HQ HR]].
-(* FILL IN HERE *) Admitted.
+  split.
+  Case "P /\ Q".
+    split.
+    SCase "P". apply HP.
+    SCase "Q". apply HQ.
+  Case "R".
+    apply HR.
+Qed.
 (** [] *)
 
 
@@ -278,12 +288,32 @@ Proof.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P.
+  split.
+    intros HP. apply HP.
+    intros HP. apply HP.
+Qed.
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R PQ QR.
+  split.
+  Case "P -> R".
+    destruct PQ as [HPQ HQP].
+    destruct QR as [HQR HRQ].
+    intros HP.
+    apply HQR.
+    apply HPQ.
+    apply HP.
+  Case "P <- R".
+    destruct PQ as [HPQ HQP].
+    destruct QR as [HQR HRQ].
+    intros HR.
+    apply HQP.
+    apply HRQ.
+    apply HR.
+Qed.
 
 (** Hint: If you have an iff hypothesis in the context, you can use
     [inversion] to break it into two separate implications.  (Think
@@ -358,10 +388,6 @@ Proof.
     Case "left". right. apply HP.
     Case "right". left. apply HQ.  Qed.
 
-
-
-
-
 Theorem or_distributes_over_and_1 : forall P Q R : Prop,
   P \/ (Q /\ R) -> (P \/ Q) /\ (P \/ R).
 Proof.
@@ -377,7 +403,7 @@ Proof.
 Theorem or_distributes_over_and_2 : forall P Q R : Prop,
   (P \/ Q) /\ (P \/ R) -> P \/ (Q /\ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+ (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 1 star, optional (or_distributes_over_and)  *)
