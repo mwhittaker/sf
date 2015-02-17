@@ -403,14 +403,51 @@ Proof.
 Theorem or_distributes_over_and_2 : forall P Q R : Prop,
   (P \/ Q) /\ (P \/ R) -> P \/ (Q /\ R).
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros P Q R H.
+  destruct H as [PQ PR].
+  destruct PQ as [HP | HQ].
+  Case "P".
+    left.
+    apply HP.
+  Case "Q".
+    destruct PR as [HP' | HR].
+    SCase "P".
+      left.
+      apply HP'.
+    SCase "R".
+      right.
+      split.
+      apply HQ.
+      apply HR.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, optional (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R.
+  split.
+  Case "->".
+    intros H.
+    destruct H as [HP | [HQ HR]].
+    SCase "P".
+      split.
+      left. apply HP.
+      left. apply HP.
+    SCase "Q /\ R".
+      split.
+      right. apply HQ.
+      right. apply HR.
+  Case "<-".
+    intros H.
+    destruct H as [[HP | HQ] [HP' | HR]].
+    SCase "P".   left. apply HP.
+    SCase "P R". left. apply HP.
+    SCase "Q P". left. apply HP'.
+    SCase "Q R". right. split. apply HQ. apply HR.
+Qed.
+
 (** [] *)
 
 (* ################################################### *)
@@ -448,19 +485,37 @@ Proof.
 Theorem andb_false : forall b c,
   andb b c = false -> b = false \/ c = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H.
+  destruct b, c.
+    Case "T T". inversion H.
+    Case "T F". right. reflexivity.
+    Case "F T". left.  reflexivity.
+    Case "F F". left.  reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, optional (orb_false)  *)
 Theorem orb_prop : forall b c,
   orb b c = true -> b = true \/ c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H.
+  destruct b, c.
+    Case "T T". left.  reflexivity.
+    Case "T F". left.  reflexivity.
+    Case "F T". right. reflexivity.
+    Case "F F". inversion H.
+Qed.
 
 (** **** Exercise: 2 stars, optional (orb_false_elim)  *)
 Theorem orb_false_elim : forall b c,
   orb b c = false -> b = false /\ c = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c H.
+  destruct b, c.
+    Case "T T". inversion H.
+    Case "T F". inversion H.
+    Case "F T". inversion H.
+    Case "F F". split. reflexivity. reflexivity.
+Qed.
 (** [] *)
 
 
@@ -531,6 +586,8 @@ Proof.
     trivial to give evidence.) *)
 
 (* FILL IN HERE *)
+Inductive True :=
+  | true : True.
 (** [] *)
 
 (** However, unlike [False], which we'll use extensively, [True] is
