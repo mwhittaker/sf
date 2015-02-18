@@ -587,7 +587,7 @@ Proof.
 
 (* FILL IN HERE *)
 Inductive True :=
-  | true : True.
+  | truth : True.
 (** [] *)
 
 (** However, unlike [False], which we'll use extensively, [True] is
@@ -653,14 +653,27 @@ Proof.
 Theorem contrapositive : forall P Q : Prop,
   (P -> Q) -> (~Q -> ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q HPQ.
+  unfold not.
+  intros HQ HP.
+  apply HPQ in HP.
+  apply HQ in HP.
+  inversion HP.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 1 star (not_both_true_and_false)  *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P.
+  unfold not.
+  intros H.
+  destruct H as [HP HNP].
+  apply HNP in HP.
+  inversion HP.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, advanced (informal_not_PNP)  *)
@@ -716,8 +729,16 @@ we would have both [~ (P \/ ~P)] and [~ ~ (P \/ ~P)], a contradiction. *)
 
 Theorem excluded_middle_irrefutable:  forall (P:Prop), ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros P.
+  unfold not.
+  intros H.
+  apply H.
+  right.
+  intros HP.
+  apply H.
+  left.
+  apply HP.
+Qed.
 
 (* ########################################################## *)
 (** ** Inequality *)
@@ -761,14 +782,69 @@ Theorem false_beq_nat : forall n m : nat,
      n <> m ->
      beq_nat n m = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    intros m H.
+    unfold not in H.
+    destruct m as [| m'].
+    SCase "m = 0".
+      simpl.
+      apply ex_falso_quodlibet.
+      apply H.
+      reflexivity.
+    SCase "m = S m'".
+      reflexivity.
+  Case "n = S n'".
+    intros m H.
+    unfold not in H.
+    destruct m as [| m'].
+    SCase "m = 0".
+      reflexivity.
+    SCase "m = S m'".
+      simpl.
+      apply IHn'.
+      unfold not.
+      intros Heq.
+      apply H.
+      apply f_equal.
+      apply Heq.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (beq_nat_false)  *)
 Theorem beq_nat_false : forall n m,
   beq_nat n m = false -> n <> m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n'].
+  Case "n = 0".
+    unfold not.
+    intros m H.
+    destruct m as [| m'].
+    SCase "m = 0".
+      apply ex_falso_quodlibet.
+      inversion H.
+    SCase "m = S m'".
+      intros contra.
+      inversion contra.
+  Case "n = S n'".
+    unfold not.
+    intros m H.
+    destruct m as [| m'].
+    SCase "m = 0".
+      intros contra.
+      inversion contra.
+    SCase "m = S m'".
+      simpl in H.
+      apply IHn' in H.
+      unfold not in H.
+      intros Eq.
+      apply H.
+      inversion Eq.
+      reflexivity.
+Qed.
 (** [] *)
 
 
