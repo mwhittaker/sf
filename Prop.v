@@ -545,7 +545,11 @@ Proof.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H.
+  inversion H as [|n'].
+  inversion H1 as [|n''].
+  apply H3.
+Qed.
 
 (** The [inversion] tactic can also be used to derive goals by showing
     the absurdity of a hypothesis. *)
@@ -553,7 +557,11 @@ Proof.
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros H.
+  inversion H.
+  inversion H1.
+  inversion H3.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (ev_ev__ev)  *)
@@ -563,7 +571,17 @@ Proof.
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m Hsum Hn.
+  induction Hn as [| n'].
+  Case "ev_0".
+    apply Hsum.
+  Case "ev_SS".
+    apply IHHn.
+    simpl in Hsum.
+    inversion Hsum.
+    apply H0.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
@@ -574,7 +592,6 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
 (** [] *)
 
 
